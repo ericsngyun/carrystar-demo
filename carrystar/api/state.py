@@ -59,11 +59,12 @@ class AppState:
             }))
             await self.bus.publish(Event(EventType.COMMITTED, {
                 "mutation_id": m.mutation_id,
-                "row": row.model_dump(),
+                "row": row.model_dump(mode="json"),
                 "type": m.type.value,
                 "classification": m.classification.value,
             }))
             await self._publish_state(store)
+            self._refresh_mirror(store)
             return m
 
     async def reject(self, mutation_id: str) -> Mutation:
@@ -81,16 +82,30 @@ class AppState:
     async def _publish_state(self, store=None) -> None:
         store = store or registry.get_store()
         await self.bus.publish(Event(EventType.STATE, {
-            "rows": [r.model_dump() for r in store.get_state()],
+            "rows": [r.model_dump(mode="json") for r in store.get_state()],
         }))
 
     def state_snapshot(self) -> dict:
         store = registry.get_store()
         return {
-            "rows": [r.model_dump() for r in store.get_state()],
-            "pending": [m.model_dump() for m in self.pending_list()],
+            "rows": [r.model_dump(mode="json") for r in store.get_state()],
+            "pending": [m.model_dump(mode="json") for m in self.pending_list()],
             "replay_running": self.replay_running,
         }
+
+    def _refresh_mirror(self, store) -> None:
+        """Regenerate the visible .xlsx mirror after a commit (demo beat)."""
+        from carrystar.config import MIRROR_XLSX
+
+        try:
+            store.write_mirror_xlsx(MIRROR_XLSX)
+            self.bus.publish_nowait(Event(EventType.LOG, {
+                "message": f"mirror .xlsx updated → {MIRROR_XLSX.relative_to(MIRROR_XLSX.parents[1])}",
+            }))
+        except Exception as e:  # noqa: BLE001 — mirror is cosmetic; never block a commit
+            self.bus.publish_nowait(Event(EventType.LOG, {
+                "message": f"mirror write skipped: {type(e).__name__}",
+            }))
 
     async def reset(self) -> None:
         async with self._lock:
