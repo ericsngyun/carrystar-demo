@@ -18,6 +18,16 @@ export async function startReplay(mode: "live" | "replay", stepSeconds?: number)
   return r.json();
 }
 
+export async function nextEmail(stepSeconds?: number) {
+  const r = await fetch(`${BASE}/replay/next`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ step_seconds: stepSeconds }),
+  });
+  if (!r.ok) throw new Error(`replay/next failed: ${r.status}`);
+  return r.json();
+}
+
 export async function approveMutation(id: string, edits?: Record<string, unknown>) {
   const r = await fetch(`${BASE}/mutations/${id}/approve`, {
     method: "POST",

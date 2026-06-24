@@ -17,7 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from carrystar.contracts import Mutation, ParsedDoc, TrackerRow
+from carrystar.contracts import Beat, Mutation, ParsedDoc, TrackerRow
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +119,13 @@ class ReplaySource(Protocol):
     WS-5 owns ordering so the Ross catch is the climax."""
 
     def packets(self) -> list[EmailPacket]:
+        ...
+
+    def beats(self) -> list[Beat]:
+        """Ordered inbound emails for the whole replay (across shipments). A
+        shipment may contribute multiple beats (order then revision). The loop
+        processes these one at a time; WS-5 orders them so Ross lands as the
+        climax and its revision follows its order."""
         ...
 
     def cached_run(self) -> dict | None:

@@ -25,6 +25,7 @@ from carrystar.contracts import (
     ParsedDoc,
     ReconResult,
     SourceRef,
+    StatusColor,
     TrackerRow,
 )
 
@@ -144,6 +145,7 @@ def reconcile(state: list[TrackerRow], doc: ParsedDoc) -> ReconResult:
                 note = f"Add PO {po} to existing shipment {shipment_id}"
 
             proposed_row = _build_proposed_row(shipment_id, po, fields, sources)
+            proposed_row.status_color = StatusColor.BLUE   # visually mark a newly added row
             mutations.append(
                 Mutation(
                     mutation_id=f"mut-{shipment_id}-{po}-add",

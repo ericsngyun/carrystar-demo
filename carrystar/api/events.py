@@ -21,7 +21,8 @@ class EventType(str, Enum):
     EXTRACT = "extract"             # parser/extraction progress
     RECON = "recon"                 # a ReconResult summary
     PROPOSAL = "proposal"           # a pending Mutation awaiting the human gate
-    MUTATION_STATUS = "mutation_status"  # approved / rejected / edited
+    MUTATION_STATUS = "mutation_status"  # approved / rejected / edited / superseded
+    RETRACTION = "retraction"       # agent withdrew a pending proposal (a later email rescinded it)
     COMMITTED = "committed"         # an approved mutation committed -> row delta
     STATE = "state"                 # full tracker-state snapshot
     LOG = "log"                     # narration line

@@ -94,6 +94,7 @@ class DocType(str, Enum):
 class MutationType(str, Enum):
     ADD_ROW = "add_row"
     UPDATE_FIELD = "update_field"
+    REMOVE_ROW = "remove_row"   # compensating removal (e.g. a rescinded PO already committed)
 
 
 class MutationStatus(str, Enum):
@@ -101,6 +102,7 @@ class MutationStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     EDITED = "edited"
+    SUPERSEDED = "superseded"   # a pending proposal withdrawn by a later inbound email
 
 
 class Classification(str, Enum):
@@ -113,6 +115,7 @@ class Classification(str, Enum):
     FIELD_CHANGE = "field_change"  # row present, a transcription field differs
     MISSING_ROW = "missing_row"  # row exists in source docs, absent in tracker
     INTERNAL_FLAG = "internal_flag"  # an internal column needs a human (never auto-filled)
+    RESCINDED = "rescinded"      # a prior proposal/row invalidated by a later email (e.g. PO pulled)
 
 
 # ---------------------------------------------------------------------------
@@ -199,6 +202,29 @@ class ReconResult(BaseModel):
     source_doc_count: int = 0
     matched_count: int = 0
     change_count: int = 0          # mutations that are not `matched`
+
+
+class Beat(BaseModel):
+    """One inbound email in a packet's timeline. A shipment can have several —
+    e.g. an order email followed by a revision email that rescinds a PO. The
+    replay seam (WS-5) emits beats in order; the loop (WS-4) processes one per
+    'inbound email' so the demo unfolds as the thread actually did.
+    """
+
+    beat_id: str
+    kind: str = "order"            # "order" | "revision"
+    shipment_id: str = ""
+    account: str = ""
+    subject: str = ""
+    sender: str = ""
+    date: str = ""
+    email_body: str = ""
+    rescinds: list[str] = Field(default_factory=list)   # customer POs this email pulls
+    attachment_names: list[str] = Field(default_factory=list)  # for narration
+    attachment_paths: list[str] = Field(default_factory=list)  # real path -> parser seam
+    # Dev-stub convenience: pre-parsed docs. Real path leaves empty and the loop
+    # parses attachment_paths through the WS-1 parser seam instead.
+    parsed_docs: list[ParsedDoc] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

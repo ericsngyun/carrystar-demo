@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 
 from carrystar.api.events import Event, EventBus, EventType
-from carrystar.contracts import Mutation, MutationStatus
+from carrystar.contracts import Beat, Mutation, MutationStatus, MutationType, SourceRef
 from carrystar.seams import registry
 
 
@@ -24,6 +24,9 @@ class AppState:
         self._pending: dict[str, Mutation] = {}
         self._lock = asyncio.Lock()
         self.replay_running = False
+        self.beats: list[Beat] = []
+        self.beat_cursor = 0
+        self.beat_in_flight = False
 
     # --- proposals -------------------------------------------------------
     def register_proposal(self, mutation: Mutation) -> None:
@@ -37,6 +40,31 @@ class AppState:
 
     def pending_list(self) -> list[Mutation]:
         return [m for m in self._pending.values() if m.status == MutationStatus.PENDING]
+
+    def find_pending_add(self, shipment_id: str, po: str) -> Mutation | None:
+        """A still-pending add_row proposal for this shipment + PO, if any."""
+        for m in self._pending.values():
+            if (m.status == MutationStatus.PENDING and m.type == MutationType.ADD_ROW
+                    and m.shipment_id == shipment_id and m.proposed_row
+                    and m.proposed_row.customer_po == po):
+                return m
+        return None
+
+    # --- replay timeline -------------------------------------------------
+    def load_beats(self) -> None:
+        replay = registry.get_replay()
+        self.beats = list(replay.beats()) if hasattr(replay, "beats") else []
+        self.beat_cursor = 0
+        self.beat_in_flight = False
+
+    async def begin_replay(self) -> None:
+        async with self._lock:
+            self._pending.clear()
+            self.bus.clear_history()
+            registry.get_store().reset()
+            self.load_beats()
+            self.replay_running = False
+        await self._publish_state()
 
     # --- human gate ------------------------------------------------------
     async def approve(self, mutation_id: str, edits: dict | None = None) -> Mutation:
@@ -78,6 +106,24 @@ class AppState:
             }))
             return m
 
+    async def supersede(self, mutation_id: str, reason: str, sources: list[SourceRef], po: str) -> Mutation | None:
+        """A later inbound email rescinded a still-pending proposal. Withdraw it
+        (no tracker change) and announce the retraction with provenance."""
+        async with self._lock:
+            m = self._pending.get(mutation_id)
+            if m is None:
+                return None
+            m.status = MutationStatus.SUPERSEDED
+            self._pending[mutation_id] = m
+            await self.bus.publish(Event(EventType.MUTATION_STATUS, {
+                "mutation_id": mutation_id, "status": MutationStatus.SUPERSEDED.value,
+            }))
+            await self.bus.publish(Event(EventType.RETRACTION, {
+                "mutation_id": mutation_id, "customer_po": po, "reason": reason,
+                "sources": [s.model_dump(mode="json") for s in sources],
+            }))
+        return m
+
     # --- state snapshot --------------------------------------------------
     async def _publish_state(self, store=None) -> None:
         store = store or registry.get_store()
@@ -91,6 +137,9 @@ class AppState:
             "rows": [r.model_dump(mode="json") for r in store.get_state()],
             "pending": [m.model_dump(mode="json") for m in self.pending_list()],
             "replay_running": self.replay_running,
+            "beat_cursor": self.beat_cursor,
+            "total_beats": len(self.beats),
+            "has_next": self.beat_cursor < len(self.beats),
         }
 
     def _refresh_mirror(self, store) -> None:
@@ -113,6 +162,9 @@ class AppState:
             self.bus.clear_history()
             registry.get_store().reset()
             self.replay_running = False
+            self.beats = []
+            self.beat_cursor = 0
+            self.beat_in_flight = False
         await self._publish_state()
 
 

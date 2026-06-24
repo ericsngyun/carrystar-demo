@@ -64,17 +64,32 @@ async def stream() -> StreamingResponse:
 
 @router.post("/replay/start")
 async def replay_start(req: ReplayRequest) -> dict:
-    if app_state.replay_running:
-        raise HTTPException(status_code=409, detail="replay already running")
     if req.mode not in ("live", "replay"):
         raise HTTPException(status_code=400, detail="mode must be 'live' or 'replay'")
+    if app_state.beat_in_flight:
+        raise HTTPException(status_code=409, detail="a beat is still being delivered")
 
     from carrystar.loop import orchestrator
 
     step = req.step_seconds if req.step_seconds is not None else settings.replay_step_seconds
-    app_state.replay_running = True
-    asyncio.create_task(orchestrator.run_replay(app_state, mode=req.mode, step_seconds=step))
-    return {"started": True, "mode": req.mode, "step_seconds": step}
+    await app_state.begin_replay()                 # reset store/proposals, load the beat timeline
+    asyncio.create_task(orchestrator.deliver_next(app_state, step))   # deliver beat 1 (the order email)
+    return {"started": True, "mode": req.mode, "step_seconds": step, "total_beats": len(app_state.beats)}
+
+
+@router.post("/replay/next")
+async def replay_next(req: ReplayRequest | None = None) -> dict:
+    """Deliver the next inbound email (e.g. the revision that rescinds the PO)."""
+    if app_state.beat_in_flight:
+        raise HTTPException(status_code=409, detail="a beat is still being delivered")
+    if app_state.beat_cursor >= len(app_state.beats):
+        return {"delivered": False, "has_next": False}
+
+    from carrystar.loop import orchestrator
+
+    step = req.step_seconds if (req and req.step_seconds is not None) else settings.replay_step_seconds
+    asyncio.create_task(orchestrator.deliver_next(app_state, step))
+    return {"delivered": True}
 
 
 @router.post("/replay/stop")

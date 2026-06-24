@@ -47,6 +47,8 @@ button {
 button:hover:not(:disabled) { border-color: var(--accent); background: var(--panel-3); }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 620; }
 button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+button.amber { background: var(--amber); border-color: var(--amber); color: #1c1607; font-weight: 640; }
+button.amber:hover:not(:disabled) { filter: brightness(1.08); }
 button.ghost { background: transparent; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 
@@ -73,6 +75,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   padding: 11px 15px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.4;
 }
 .summary-banner .icon { font-size: 16px; }
+.resolved-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(90deg, var(--green-bg), transparent 75%);
+  border: 1px solid var(--green); border-left-width: 3px; border-radius: 10px;
+  padding: 11px 15px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.4;
+  animation: cardIn .3s ease-out;
+}
+.resolved-banner .icon { color: var(--green); font-size: 15px; }
 
 /* ---- table ---- */
 .table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: auto; }
@@ -107,6 +117,13 @@ tr.just-committed td { animation: flashIn 2s ease-out; }
 .card.missing_row { border-color: var(--amber); background: linear-gradient(180deg, var(--amber-bg), var(--panel-2) 60%); }
 .card.added_po { border-color: var(--amber); }
 .card.new_order { border-color: var(--blue); }
+.card.rescinded { border-color: var(--red); background: linear-gradient(180deg, var(--red-bg), var(--panel-2) 60%); }
+.card { position: relative; overflow: hidden; }
+.stamp {
+  position: absolute; top: 14px; right: -34px; transform: rotate(14deg);
+  background: var(--red); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  padding: 3px 40px; box-shadow: 0 2px 8px rgba(0,0,0,.4); pointer-events: none;
+}
 .card .head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
 .tag {
   font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700;
@@ -115,6 +132,7 @@ tr.just-committed td { animation: flashIn 2s ease-out; }
 .tag.missing_row, .tag.added_po { background: var(--amber); color: #1c1607; }
 .tag.field_change { background: var(--blue-bg); color: #9cc4ff; }
 .tag.new_order { background: var(--blue); color: #fff; }
+.tag.rescinded { background: var(--red); color: #fff; }
 .conf { margin-left: auto; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .conf b { color: var(--text); }
 .card .note { font-size: 13px; color: var(--text); margin: 0 0 10px; line-height: 1.45; }
@@ -147,4 +165,5 @@ button.reject:hover:not(:disabled) { border-color: var(--red); color: var(--red)
 .log .line .ts { color: var(--faint); font-variant-numeric: tabular-nums; flex-shrink: 0; font-family: ui-monospace, monospace; }
 .log .line.kind-recon { color: var(--amber); }
 .log .line.kind-committed { color: var(--green); }
+.log .line.kind-retraction { color: var(--red); }
 .log .line.kind-triage, .log .line.kind-extract { color: var(--muted); }

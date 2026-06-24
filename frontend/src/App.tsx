@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  approveMutation, getState, rejectMutation, resetDemo, startReplay, subscribe,
+  approveMutation, getState, nextEmail, rejectMutation, resetDemo, startReplay, subscribe,
 } from "./lib/api";
 import { INTERNAL_COLUMNS, TRACKER_COLUMNS } from "./lib/types";
 import type { Mutation, TrackerRow } from "./lib/types";
 
 interface LogLine { t: string; msg: string; kind: string; }
 
-// easeOutCubic tween so the carton KPI visibly counts up on commit.
 function useAnimatedNumber(target: number, ms = 850): number {
   const [val, setVal] = useState(target);
   const from = useRef(target);
@@ -33,10 +32,13 @@ export default function App() {
   const [rows, setRows] = useState<TrackerRow[]>([]);
   const [pending, setPending] = useState<Mutation[]>([]);
   const [leaving, setLeaving] = useState<Set<string>>(new Set());
+  const [rescinded, setRescinded] = useState<Set<string>>(new Set());
   const [log, setLog] = useState<LogLine[]>([]);
   const [connected, setConnected] = useState(false);
   const [running, setRunning] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<string | null>(null);
   const [flash, setFlash] = useState<Set<string>>(new Set());
   const [pulse, setPulse] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -46,48 +48,63 @@ export default function App() {
   }
 
   useEffect(() => {
-    getState().then((s) => { setRows(s.rows); setPending(s.pending); setRunning(s.replay_running); });
+    getState().then((s) => {
+      setRows(s.rows); setPending(s.pending); setRunning(s.replay_running); setHasNext(s.has_next);
+    });
     return subscribe(
       (type, data) => {
         setConnected(true);
         switch (type) {
           case "hello":
-          case "state":
             if (data.rows) setRows(data.rows);
             if (data.pending) setPending(data.pending);
-            if (typeof data.replay_running === "boolean") setRunning(data.replay_running);
+            if (typeof data.has_next === "boolean") setHasNext(data.has_next);
+            break;
+          case "state":
+            if (data.rows) setRows(data.rows);
             break;
           case "proposal":
             setPending((p) => [...p.filter((m) => m.mutation_id !== data.mutation_id), data]);
-            addLog(`proposed · ${String(data.classification).replace("_", " ")} · ${data.agent_note}`, "proposal");
+            addLog(`proposed · ${String(data.classification).replace(/_/g, " ")} · ${data.agent_note}`, "proposal");
             break;
           case "recon":
             setSummary(data.summary);
             addLog(`reconciled ${data.shipment_id} — ${data.summary}`, "recon");
+            break;
+          case "retraction":
+            setRescinded((s) => new Set(s).add(data.mutation_id));
+            setResolved(`Retracted PO ${data.customer_po} — ${data.reason}`);
+            setSummary(null);
+            addLog(`retracted PO ${data.customer_po}: ${data.reason}`, "retraction");
             break;
           case "mutation_status":
             setLeaving((s) => new Set(s).add(data.mutation_id));
             setTimeout(() => {
               setPending((p) => p.filter((m) => m.mutation_id !== data.mutation_id));
               setLeaving((s) => { const n = new Set(s); n.delete(data.mutation_id); return n; });
-            }, 360);
+            }, 380);
             break;
           case "committed": {
             const rid = data.row?.row_id;
-            if (rid) {
+            const removed = data.type === "remove_row";
+            if (rid && !removed) {
               setFlash((f) => new Set(f).add(rid));
-              setPulse(true);
               setTimeout(() => setFlash((f) => { const n = new Set(f); n.delete(rid); return n; }), 2000);
-              setTimeout(() => setPulse(false), 1200);
             }
-            addLog(`committed PO ${data.row?.customer_po ?? rid} (${String(data.classification).replace("_", " ")})`, "committed");
+            setPulse(true); setTimeout(() => setPulse(false), 1200);
+            addLog(`${removed ? "removed" : "committed"} PO ${data.row?.customer_po ?? rid}`, "committed");
             break;
           }
-          case "email_received": addLog(`email in — ${data.subject ?? data.packet_id}`, "email"); break;
+          case "email_received":
+            addLog(`email in [${data.kind}] — ${data.sender}: ${data.subject}`, "email");
+            break;
           case "triage": addLog(`triage [${data.model}] → ${data.decision}: ${data.reason ?? ""}`, "triage"); break;
           case "extract": addLog(`extract — ${data.message ?? ""}`, "extract"); break;
           case "log": addLog(data.message ?? "", "log"); break;
-          case "done": setRunning(false); addLog("replay complete.", "log"); break;
+          case "done":
+            setRunning(false);
+            if (typeof data.has_next === "boolean") setHasNext(data.has_next);
+            break;
           case "error": addLog(`ERROR: ${data.message ?? "unknown"}`, "error"); break;
         }
       },
@@ -97,12 +114,18 @@ export default function App() {
 
   useEffect(() => { logEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [log]);
 
-  async function onReplay(mode: "live" | "replay") {
+  async function onReplay() {
+    setPending([]); setSummary(null); setResolved(null); setLog([]);
     setRunning(true);
-    try { await startReplay(mode); } catch (e) { addLog(String(e), "error"); setRunning(false); }
+    try { await startReplay("replay"); } catch (e) { addLog(String(e), "error"); setRunning(false); }
+  }
+  async function onNext() {
+    setRunning(true);
+    try { await nextEmail(); } catch (e) { addLog(String(e), "error"); setRunning(false); }
   }
   async function onReset() {
-    await resetDemo(); setPending([]); setSummary(null); setLog([]);
+    await resetDemo();
+    setPending([]); setSummary(null); setResolved(null); setLog([]); setHasNext(false);
     const s = await getState(); setRows(s.rows);
   }
 
@@ -120,8 +143,8 @@ export default function App() {
         </div>
         <div className="spacer" />
         <div className="status"><span className={`dot${connected ? " live" : ""}`} />{connected ? "stream live" : "connecting…"}</div>
-        <button className="primary" disabled={running} onClick={() => onReplay("replay")}>▶ Replay</button>
-        <button className="ghost" disabled={running} onClick={() => onReplay("live")}>Run live</button>
+        <button className="primary" disabled={running} onClick={onReplay}>▶ Replay thread</button>
+        {hasNext && <button className="amber" disabled={running} onClick={onNext}>Next email ▸</button>}
         <button className="ghost" onClick={onReset}>Reset</button>
       </div>
 
@@ -138,6 +161,7 @@ export default function App() {
       <div className="body">
         <div className="main">
           {summary && <div className="summary-banner"><span className="icon">⚠</span><span>{summary}</span></div>}
+          {resolved && <div className="resolved-banner"><span className="icon">✓</span><span>{resolved}</span></div>}
           <h2 className="section-title">Tracker <span className="count-pill">mirrors customer sheet · 14 cols</span></h2>
           <div className="table-wrap">
             <table>
@@ -165,11 +189,12 @@ export default function App() {
           <div className="proposals">
             <h2 className="section-title">Pending proposals <span className="count-pill">{visiblePending.length}</span></h2>
             {visiblePending.length === 0 && (
-              <div className="empty">No pending proposals.<br />Hit <b>Replay</b> to stream the order email through the agent.</div>
+              <div className="empty">No pending proposals.<br />Hit <b>Replay thread</b> to stream the order email through the agent.</div>
             )}
             {visiblePending.map((m) => (
               <ProposalCard
-                key={m.mutation_id} m={m} leaving={leaving.has(m.mutation_id)}
+                key={m.mutation_id} m={m}
+                leaving={leaving.has(m.mutation_id)} rescinded={rescinded.has(m.mutation_id)}
                 onApprove={() => approveMutation(m.mutation_id)}
                 onReject={() => rejectMutation(m.mutation_id)}
               />
@@ -188,15 +213,17 @@ export default function App() {
   );
 }
 
-function ProposalCard({ m, leaving, onApprove, onReject }: {
-  m: Mutation; leaving: boolean; onApprove: () => void; onReject: () => void;
+function ProposalCard({ m, leaving, rescinded, onApprove, onReject }: {
+  m: Mutation; leaving: boolean; rescinded: boolean; onApprove: () => void; onReject: () => void;
 }) {
   const cls = m.classification;
   const pr = m.proposed_row;
+  const isRemove = m.type === "remove_row";
   return (
     <div className={`card ${cls}${leaving ? " leaving" : ""}`}>
+      {rescinded && <div className="stamp">RESCINDED</div>}
       <div className="head">
-        <span className={`tag ${cls}`}>{cls.replace(/_/g, " ")}</span>
+        <span className={`tag ${cls}`}>{isRemove ? "remove" : cls.replace(/_/g, " ")}</span>
         <span className="conf">confidence <b>{(m.confidence * 100).toFixed(0)}%</b></span>
       </div>
       <p className="note">{m.agent_note}</p>
@@ -223,8 +250,8 @@ function ProposalCard({ m, leaving, onApprove, onReject }: {
         ))}
       </ul>
       <div className="actions">
-        <button className="approve" disabled={leaving} onClick={onApprove}>Approve</button>
-        <button className="reject" disabled={leaving} onClick={onReject}>Reject</button>
+        <button className="approve" disabled={leaving} onClick={onApprove}>{isRemove ? "Approve removal" : "Approve"}</button>
+        <button className="reject" disabled={leaving} onClick={onReject}>{isRemove ? "Keep row" : "Reject"}</button>
       </div>
     </div>
   );

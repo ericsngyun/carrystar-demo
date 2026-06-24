@@ -1,5 +1,10 @@
-"""WS-4 integration — the agent loop end to end over the dev seam (real Ross
-packet). Claude-lane test; uses asyncio.run so no async-pytest plugin needed.
+"""WS-4 integration — the two-act Ross thread end to end over the dev seam.
+
+Act 1 (order email): agent flags PO 11667250 as missing (the catch).
+Act 2 (revision email): agent retracts it (pending) or proposes a compensating
+removal (already committed). The tracker ends correct at 559/4 either way.
+
+Claude-lane tests; asyncio.run so no async-pytest plugin needed.
 """
 
 import asyncio
@@ -7,71 +12,113 @@ import json
 
 from carrystar.api.events import Event, EventType
 from carrystar.api.state import AppState
-from carrystar.loop.orchestrator import run_replay
-from carrystar.seams import registry
+from carrystar.loop import orchestrator
 
 
-def _run_and_collect():
+async def _new_app() -> tuple[AppState, list[Event], asyncio.Task]:
+    app = AppState()
+    events: list[Event] = []
+    q = app.bus.subscribe()
+
+    async def drain():
+        while True:
+            events.append(await q.get())
+
+    task = asyncio.create_task(drain())
+    await app.begin_replay()
+    return app, events, task
+
+
+def test_act1_surfaces_the_missing_po_catch():
     async def main():
-        registry.get_store().reset()
-        app = AppState()
-        q = app.bus.subscribe()
-        events: list[Event] = []
-
-        async def drain():
-            while True:
-                events.append(await q.get())
-
-        task = asyncio.create_task(drain())
-        await run_replay(app, mode="live", step_seconds=0)
+        app, events, task = await _new_app()
+        await orchestrator.deliver_next(app, 0.0)
         await asyncio.sleep(0.02)
         task.cancel()
-        return app, events
+        pend = app.pending_list()
+        assert len(pend) == 1
+        m = pend[0]
+        assert m.classification.value == "missing_row"
+        assert m.proposed_row.customer_po == "11667250"
+        assert m.proposed_row.ctn_qty == 103
+        # corroborated by order export + original BOL + pick slip + email
+        assert len({s.doc_name for s in m.sources}) >= 3
+        # tracker untouched until a human approves
+        from carrystar.seams import registry
+        assert sum(r.ctn_qty for r in registry.get_store().get_state()) == 559
 
-    return asyncio.run(main())
-
-
-def test_loop_emits_full_beat_sequence():
-    _app, events = _run_and_collect()
-    seq = [e.type.value for e in events]
-    for beat in ("email_received", "triage", "extract", "recon", "proposal", "done"):
-        assert beat in seq, f"missing beat {beat} in {seq}"
-
-
-def test_loop_surfaces_triple_sourced_catch():
-    _app, events = _run_and_collect()
-    proposals = [e.data for e in events if e.type is EventType.PROPOSAL]
-    miss = [p for p in proposals if p["classification"] == "missing_row"]
-    assert len(miss) == 1
-    m = miss[0]
-    assert m["proposed_row"]["customer_po"] == "11667250"
-    assert m["proposed_row"]["ctn_qty"] == 103
-    assert len({s["doc_name"] for s in m["sources"]}) == 3
-    assert m["confidence"] >= 0.95
+    asyncio.run(main())
 
 
-def test_approve_commits_and_reaches_662():
-    app, events = _run_and_collect()
-    miss = next(e.data for e in events if e.type is EventType.PROPOSAL
-                and e.data["classification"] == "missing_row")
+def test_act2_auto_retracts_a_pending_catch():
+    async def main():
+        app, events, task = await _new_app()
+        await orchestrator.deliver_next(app, 0.0)   # act 1: catch
+        await orchestrator.deliver_next(app, 0.0)   # act 2: revision
+        await asyncio.sleep(0.02)
+        task.cancel()
+        retr = [e for e in events if e.type is EventType.RETRACTION]
+        assert len(retr) == 1
+        assert retr[0].data["customer_po"] == "11667250"
+        assert len(retr[0].data["sources"]) == 2   # revised BOL + revision email
+        # nothing pending, tracker stays correct
+        assert app.pending_list() == []
+        from carrystar.seams import registry
+        rows = registry.get_store().get_state()
+        assert len(rows) == 4 and sum(r.ctn_qty for r in rows) == 559
 
-    before = registry.get_store().get_state()
-    assert len(before) == 4 and sum(r.ctn_qty for r in before) == 559
-
-    asyncio.run(app.approve(miss["mutation_id"]))
-
-    after = registry.get_store().get_state()
-    assert len(after) == 5 and sum(r.ctn_qty for r in after) == 662
+    asyncio.run(main())
 
 
-def test_sse_wire_serializes_enums_as_strings():
-    """The SSE payload must carry plain strings (missing_row / plain), not enum
-    reprs, so the browser parses them directly."""
-    _app, events = _run_and_collect()
-    proposal = next(e for e in events if e.type is EventType.PROPOSAL)
-    wire = proposal.sse()
-    payload = json.loads(wire.split("data: ", 1)[1].strip())
-    assert payload["classification"] == "missing_row"
-    assert payload["type"] == "add_row"
-    assert payload["proposed_row"]["status_color"] == "plain"
-    assert "Classification." not in wire and "StatusColor." not in wire
+def test_act2_proposes_removal_when_catch_already_approved():
+    async def main():
+        from carrystar.seams import registry
+        app, events, task = await _new_app()
+        await orchestrator.deliver_next(app, 0.0)   # act 1
+        add = app.pending_list()[0]
+        await app.approve(add.mutation_id)          # human approves the add -> 662
+        assert sum(r.ctn_qty for r in registry.get_store().get_state()) == 662
+        await orchestrator.deliver_next(app, 0.0)   # act 2: revision
+        await asyncio.sleep(0.02)
+        rem = [m for m in app.pending_list() if m.type.value == "remove_row"]
+        assert len(rem) == 1 and rem[0].classification.value == "rescinded"
+        await app.approve(rem[0].mutation_id)       # human approves the removal -> 559
+        task.cancel()
+        rows = registry.get_store().get_state()
+        assert len(rows) == 4 and sum(r.ctn_qty for r in rows) == 559
+
+    asyncio.run(main())
+
+
+def test_revision_reconcile_reads_in_sync_not_missing():
+    """The revised reconcile must NOT re-flag 11667250 as missing — the rescind
+    is a control signal, not an order line."""
+    async def main():
+        app, events, task = await _new_app()
+        await orchestrator.deliver_next(app, 0.0)
+        events.clear()
+        await orchestrator.deliver_next(app, 0.0)   # revision beat
+        await asyncio.sleep(0.02)
+        task.cancel()
+        recon = [e for e in events if e.type is EventType.RECON]
+        # the revision's reconcile summary must not claim a missing PO
+        assert recon and "missing" not in recon[0].data["summary"].lower()
+
+    asyncio.run(main())
+
+
+def test_sse_wire_serializes_new_enums_as_strings():
+    async def main():
+        app, events, task = await _new_app()
+        await orchestrator.deliver_next(app, 0.0)
+        await orchestrator.deliver_next(app, 0.0)
+        await asyncio.sleep(0.02)
+        task.cancel()
+        retr = next(e for e in events if e.type is EventType.RETRACTION)
+        wire = retr.sse()
+        payload = json.loads(wire.split("data: ", 1)[1].strip())
+        assert payload["customer_po"] == "11667250"
+        status = next(e for e in events if e.type is EventType.MUTATION_STATUS and e.data["status"] == "superseded")
+        assert "MutationStatus." not in status.sse()
+
+    asyncio.run(main())

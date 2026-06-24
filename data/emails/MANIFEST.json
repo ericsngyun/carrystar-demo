@@ -1,0 +1,213 @@
+{
+  "_screenshots": [
+    {
+      "file": "screenshot_1.png",
+      "bytes": 79689
+    },
+    {
+      "file": "screenshot_2.png",
+      "bytes": 72616
+    },
+    {
+      "file": "screenshot_3.png",
+      "bytes": 81661
+    },
+    {
+      "file": "screenshot_4.png",
+      "bytes": 147187
+    },
+    {
+      "file": "screenshot_5.png",
+      "bytes": 90390
+    },
+    {
+      "file": "screenshot_6.png",
+      "bytes": 166720
+    }
+  ],
+  "ross-cs02411883": [
+    {
+      "file": "Pick Slips - Export - 2026-06-15T111006.232.pdf",
+      "bytes": 688052,
+      "type": "application/pdf"
+    },
+    {
+      "file": "Book6.xlsx",
+      "bytes": 9779,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "file": "BOL_CS02411883_original.docx",
+      "bytes": 36736,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL_CS02411883_revised.docx",
+      "bytes": 36662,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "email1_add_instruction.txt",
+      "captured": true
+    },
+    {
+      "file": "email2_revision.txt",
+      "captured": true
+    }
+  ],
+  "asn-cs0001076816": [
+    {
+      "file": "CS0001076816 ASN4484190.pdf",
+      "bytes": 290115,
+      "type": "application/pdf"
+    },
+    {
+      "file": "CS0001076816 ASN4484190.xlsx",
+      "bytes": 21179,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "file": "BOL ASN 4484190.docx",
+      "bytes": 35933,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    }
+  ],
+  "asn-cs0001072883": [
+    {
+      "file": "ASN#4478423 LABELS.pdf",
+      "bytes": 1084955,
+      "type": "application/pdf"
+    },
+    {
+      "file": "CS0001072883.xlsx",
+      "bytes": 9397,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "file": "BOL ASN 4478423.docx",
+      "bytes": 35536,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    }
+  ],
+  "fred-meyer": [
+    {
+      "file": "FRED MEYER-JUNE.26.xlsx",
+      "bytes": 9803,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "file": "FM SHIPPING KROGER 06-26-26 WH.xlsx",
+      "bytes": 22755,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "file": "po#44487830 labels.pdf",
+      "bytes": 594492,
+      "type": "application/pdf"
+    },
+    {
+      "file": "po#44487834 labels.pdf",
+      "bytes": 1086937,
+      "type": "application/pdf"
+    },
+    {
+      "file": "po#44648270 labels.pdf",
+      "bytes": 272735,
+      "type": "application/pdf"
+    },
+    {
+      "file": "po#44648268 labels.pdf",
+      "bytes": 4009966,
+      "type": "application/pdf"
+    }
+  ],
+  "fashion-nova": [
+    {
+      "file": "FN BOL 06222026.doc",
+      "bytes": 81920,
+      "type": "application/msword"
+    },
+    {
+      "file": "FN REPORT JUN.22-26.xlsx",
+      "bytes": 10750,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    }
+  ],
+  "kohls": [
+    {
+      "file": "BOL-#810 - FINDLAY OH 6-18-26.docx",
+      "bytes": 30122,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#813 - PATASKALA OH 06-18-26.docx",
+      "bytes": 30665,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#855 - SAN BERNARDINO CA 6-18-26.docx",
+      "bytes": 29826,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#830 - WINCHESTER VA 6-18-26.docx",
+      "bytes": 28860,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#840 - GRAIN VALLEY,MO 6-18-26.docx",
+      "bytes": 29593,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#860 - CORSICANA TX 6-18-26.docx",
+      "bytes": 29158,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#865 - WURTSBORO NY 6-18-26.docx",
+      "bytes": 29228,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#885 - PATTERSON CA 6-18-26.docx",
+      "bytes": 29654,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#890 - OTTAWA, IL 6-18-26.docx",
+      "bytes": 29848,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#816 - EDGEWOOD, MD 6-18-26.docx",
+      "bytes": 29711,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#826 - DESOTO, TX 06-18-26.docx",
+      "bytes": 29454,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "BOL-#836 - PLAINFILED IN -06-18-26.docx",
+      "bytes": 30428,
+      "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    {
+      "file": "manifest 929983009.pdf",
+      "bytes": 10702,
+      "type": "application/pdf"
+    },
+    {
+      "file": "MANIFEST 930041377.pdf",
+      "bytes": 3370,
+      "type": "application/pdf"
+    },
+    {
+      "file": "manifest 929990108.pdf",
+      "bytes": 7828,
+      "type": "application/pdf"
+    }
+  ]
+}

@@ -56,10 +56,10 @@ export interface TrackerRow {
   source_refs: SourceRef[];
 }
 
-export type MutationType = "add_row" | "update_field";
-export type MutationStatus = "pending" | "approved" | "rejected" | "edited";
+export type MutationType = "add_row" | "update_field" | "remove_row";
+export type MutationStatus = "pending" | "approved" | "rejected" | "edited" | "superseded";
 export type Classification =
-  | "matched" | "new_order" | "added_po" | "field_change" | "missing_row" | "internal_flag";
+  | "matched" | "new_order" | "added_po" | "field_change" | "missing_row" | "internal_flag" | "rescinded";
 
 export interface Mutation {
   mutation_id: string;
@@ -79,7 +79,7 @@ export interface Mutation {
 
 export type EventType =
   | "hello" | "email_received" | "triage" | "extract" | "recon"
-  | "proposal" | "mutation_status" | "committed" | "state" | "log" | "done" | "error";
+  | "proposal" | "mutation_status" | "retraction" | "committed" | "state" | "log" | "done" | "error";
 
 export interface StreamEvent<T = any> {
   type: EventType;
@@ -90,4 +90,7 @@ export interface StateSnapshot {
   rows: TrackerRow[];
   pending: Mutation[];
   replay_running: boolean;
+  beat_cursor: number;
+  total_beats: number;
+  has_next: boolean;
 }

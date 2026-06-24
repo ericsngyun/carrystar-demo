@@ -1,0 +1,157 @@
+From: Lina Vincelli <Mark Edwards Apparel — Logistics Coordinator>
+Re: load CS02411883 (revision)
+
+Hi Vanessa
+We will not be shipping PO 11667250 on this load.
+It will ship in July.
+Please disregard the picking slip. I attached the revised BOL.
+Thank you
+
+
+[MEAlogo.jpg]
+Lina Vincelli
+
+Mark Edwards
+Apparel
+Logistics Coordinator
+8480, rue Jeanne-Mance
+Montréal QC H2P 2S3
+Canada
+T +1 514 388 2353 X 2314
+markedwards.com<http://markedwards.com>
+Confidentiality Notice: The information contained in this email, including but not limited to apparel designs, textile artworks, and pricing, is confidential information and intended solely for the recipient. Unauthorized use, dissemination, or copying is prohibited. If received in error, please notify the sender, delete the email and attachments, and do not disclose, distribute, or copy the contents. Thank you for your cooperation.
+Avis de confidentialité: Les informations contenues dans ce courriel, y compris, mais sans s'y limiter, les dessins de vêtements, les œuvres d'art textiles et les prix, sont des informations confidentielles et sont destinées uniquement au destinataire. Toute utilisation, diffusion ou copie non autorisée est interdite. En cas d'erreur de réception, veuillez en informer l'expéditeur, supprimer l'e-mail et les pièces jointes, et ne pas divulguer, distribuer ou copier le contenu. Nous vous remercions de votre attention.
+
+
+________________________________
+From: Lina Vincelli <Lina@markedwards.com>
+Sent: Monday, June 15, 2026 11:21 AM
+To: Vanessa Alvarado <vanessa@carrystarinc.com>; Victoria Ozuna <victoria@carrystarinc.com>; Operations <operations@asklogisticsinc.com>; MarkEdwards <markedwards@carrystarinc.com>
+Cc: Anita Rinaldi <Anita.Rinaldi@markedwards.com>; Maria Cicero <Maria.Cicero@markedwards.com>
+Subject: BOL CS02411883
+
+Hi Vanessa
+Please see attached load CS02411883 - to be floor loaded.
+Pick up will be 06/17 at 9:00 am.
+We will be adding PO 11667250 to this load.
+Please add customer PO 11667250 to 1 side of the carton for import 221777 - all 103 cartons of color heather grey.
+Thank you
+
+[MEAlogo.jpg]
+Lina Vincelli
+
+Mark Edwards
+Apparel
+Logistics Coordinator
+8480, rue Jeanne-Mance
+Montréal QC H2P 2S3
+Canada
+T +1 514 388 2353 X 2314
+markedwards.com<http://markedwards.com>
+Confidentiality Notice: The information contained in this email, including but not limited to apparel designs, textile artworks, and pricing, is confidential information and intended solely for the recipient. Unauthorized use, dissemination, or copying is prohibited. If received in error, please notify the sender, delete the email and attachments, and do not disclose, distribute, or copy the contents. Thank you for your cooperation.
+Avis de confidentialité: Les informations contenues dans ce courriel, y compris, mais sans s'y limiter, les dessins de vêtements, les œuvres d'art textiles et les prix, sont des informations confidentielles et sont destinées uniquement au destinataire. Toute utilisation, diffusion ou copie non autorisée est interdite. En cas d'erreur de réception, veuillez en informer l'expéditeur, supprimer l'e-mail et les pièces jointes, et ne pas divulguer, distribuer ou copier le contenu. Nous vous remercions de votre attention.
+
+
+
+________________________________
+From: Ross.Transportation@ros.com <Ross.Transportation@ros.com>
+Sent: Friday, June 12, 2026 11:24 AM
+To: Lina Vincelli <Lina@markedwards.com>
+Subject: CARRIER/LOAD Information for a Ross Stores Pickup Request
+
+Carrier Accepted
+
+
+
+Thank you
+
+***BILL OF LADING #: CS02411883
+
+***PLEASE NOTE DELIVERY ADDRESS
+
+3404 Indian Avenue Perris, CA
+92571
+
+
+***CARRIER INFORMATION:
+SCAC: SWFD  -Carrier Name: Swift Transportation (TL)
+Contact Name: Ross Dedicated  -Phone: (951) 968-3571  Email: Ross_dedicated@swifttrans.com
+
+
+Total # of Stops : 2
+   Stop Number: 1
+   Stop Type (Pickup or Delivery): Pickup
+   Location Name: MARK EDWARDS
+         Address 1: 15350 STAFFORD ST.
+         Address 2:
+         City: CITY OF INDUSTRY
+         State: CA
+         Zip: 91744
+         Contact Name: ANITA RINALDI
+         Phone#: 514-388-2353
+         Email: anita.rinaldi@markedwards.com
+
+
+    Ross PO#: 11626058
+    Vendor Name: MARK EDWARDS APPAREL
+    Pickup Location Name: MARK EDWARDS
+    Ross or DD's Product: ROSS
+    Confirmation #:
+          PO Specific Line Item Data Item Information
+          -------------------------------------------------
+         Weight: 6930
+         Vendor Tracer Number: 2326990
+         Cube: 650
+         Cartons: 330
+         Pallets: 5
+         Type: CTN
+
+
+    Ross PO#: 11573712
+    Vendor Name: MARK EDWARDS APPAREL
+    Pickup Location Name: MARK EDWARDS
+    Ross or DD's Product: ROSS
+    Confirmation #:
+          PO Specific Line Item Data Item Information
+          -------------------------------------------------
+         Weight: 378
+         Vendor Tracer Number: 2330840
+         Cube: 130
+         Cartons: 10
+         Pallets: 1
+         Type: CTN
+
+
+    Ross PO#: 11573709
+    Vendor Name: MARK EDWARDS APPAREL
+    Pickup Location Name: MARK EDWARDS
+    Ross or DD's Product: ROSS
+    Confirmation #:
+          PO Specific Line Item Data Item Information
+          -------------------------------------------------
+         Weight: 378
+         Vendor Tracer Number: 2330840
+         Cube: 130
+         Cartons: 10
+         Pallets: 1
+         Type: CTN
+
+
+    Ross PO#: 11722464
+    Vendor Name: Forever 21 By Mark Edward
+    Pickup Location Name: MARK EDWARDS
+    Ross or DD's Product: ROSS
+    Confirmation #:
+          PO Specific Line Item Data Item Information
+          -------------------------------------------------
+         Weight: 9784
+         Vendor Tracer Number: 2331847
+         Cube: 1170
+         Cartons: 2029
+         Pallets: 9
+         Type: CTN
+
+
+
+This is the end of this freight movement
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Generated from cotmsappprd12.ros.com:28100

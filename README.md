@@ -5,10 +5,19 @@ parses → reconciles → proposes** tracker mutations. A human approves; approv
 mutations **commit** to the store and visibly update the on-screen tracker and a
 mirror `.xlsx`.
 
-**Hero beat (real data):** the Ross `CS02411883` catch — the BOL and order
-export both show **662 ctn across 5 POs**, but the tracker holds **559 ctn /
-4 POs**. PO `11667250` (103 ctn) is missing, and the agent flags it with full
-provenance.
+**Hero beat (real data, two acts):** the Ross `CS02411883` thread.
+- **Act 1 — the catch.** The order export, the original BOL, and the pick slip
+  all show **662 ctn across 5 POs**; the tracker holds **559 / 4**. The agent
+  flags PO `11667250` (103 ctn, heather grey) as missing, with full provenance.
+- **Act 2 — the retract.** Lina's follow-up email arrives: *"we will NOT be
+  shipping PO 11667250 on this load — it ships in July; disregard the pick slip"*
+  plus a **revised BOL** (559/4). The agent reads it and **withdraws its own
+  proposal** (or, if you already approved it, proposes a compensating removal).
+  The tracker is correctly **559/4**.
+
+The point: a naïve system — or a human speed-reading 50 threads a day — would
+have added 103 cancelled cartons. The agent caught the follow-up. It never
+auto-commits; every change passes a human gate.
 
 > Local, screenshared demo. No live M365/tenant email, no live workbook sync,
 > no external carrier feeds — those are pilot / phase 2–3. This is the skeleton.
@@ -56,8 +65,17 @@ uv run uvicorn carrystar.api.main:app --reload --port 8000
 cd frontend && npm install && npm run dev   # http://localhost:5173
 ```
 
-Click **Replay (cached)** to stream the Ross packet through the agent and watch
-the missing PO surface as a pending proposal. Approve it to commit.
+Demo flow:
+1. **Replay thread** → streams Act 1 (the order email). PO `11667250` surfaces
+   as a pending, fully-sourced proposal.
+2. (Optional) **Approve** it to show the commit motion (559 → 662, row flashes in).
+3. **Next email ▸** → streams Act 2 (the revision). The agent retracts the
+   proposal (or proposes a removal if you approved it). Tracker back to 559/4.
 
-`CARRYSTAR_DEV_SEAM=1` (default) uses the dev stub. `CARRYSTAR_USE_LLM=1`
-enables live model calls for triage/parse; off by default for offline rehearsal.
+`CARRYSTAR_DEV_SEAM=1` (default) uses the dev stub carrying the real Ross thread.
+`CARRYSTAR_USE_LLM=1` enables live model calls for triage; off by default for
+offline rehearsal. The numeric reconciliation is deterministic either way.
+
+Real source data for **all six accounts** (Ross, two ASN shipments, Fred Meyer,
+Fashion Nova, Kohl's) is staged under `data/emails/<account>/` with a
+`MANIFEST.json`; the live demo stays focused on the Ross hero thread.
