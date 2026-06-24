@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# Demo artifacts
+cache/
+out/
+*.sqlite
+*.db
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
