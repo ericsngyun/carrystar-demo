@@ -17,6 +17,22 @@ CACHE_DIR = REPO_ROOT / "cache"
 MIRROR_XLSX = REPO_ROOT / "out" / "tracker_mirror.xlsx"
 
 
+def _load_dotenv(path: Path = REPO_ROOT / ".env") -> None:
+    """Tiny no-dependency .env loader so IMAP creds live in a gitignored file,
+    not in shell history or our transcript. Real env always wins (setdefault)."""
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv()  # before Settings reads os.environ
+
+
 @dataclass(frozen=True)
 class Settings:
     # Model routing (LiteLLM model strings). Overridable via env.

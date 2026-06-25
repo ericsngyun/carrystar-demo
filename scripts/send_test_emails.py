@@ -25,6 +25,8 @@ import time
 from email.message import EmailMessage
 from pathlib import Path
 
+import carrystar.config  # noqa: F401 — importing loads .env into os.environ
+
 ROSS = Path(__file__).resolve().parents[1] / "data" / "emails" / "ross-cs02411883"
 _XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 _DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
