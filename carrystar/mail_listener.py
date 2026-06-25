@@ -115,9 +115,10 @@ class MailListener:
                            + (f" from {settings.imap_sender_filter}" if settings.imap_sender_filter else "")
             }))
         except Exception as e:  # noqa: BLE001
-            self._status = f"connect error: {type(e).__name__}"
+            detail = str(e).strip() or type(e).__name__
+            self._status = f"connect error: {detail[:160]}"
             self._running = False
-            await bus.publish(Event(EventType.ERROR, {"message": f"listener connect failed: {e}"}))
+            await bus.publish(Event(EventType.ERROR, {"message": f"listener connect failed: {detail}"}))
             return
 
         while self._running:
