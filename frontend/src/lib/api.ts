@@ -49,6 +49,29 @@ export async function resetDemo() {
   return r.json();
 }
 
+export interface ListenerStatus {
+  running: boolean;
+  configured: boolean;
+  status: string;
+  host: string | null;
+  folder: string;
+  sender_filter: string | null;
+  seen: number;
+}
+
+export async function listenerStatus(): Promise<ListenerStatus> {
+  const r = await fetch(`${BASE}/listener/status`);
+  return r.json();
+}
+export async function startListener(): Promise<ListenerStatus> {
+  const r = await fetch(`${BASE}/listener/start`, { method: "POST" });
+  return r.json();
+}
+export async function stopListener(): Promise<ListenerStatus> {
+  const r = await fetch(`${BASE}/listener/stop`, { method: "POST" });
+  return r.json();
+}
+
 // Subscribe to the SSE stream. Returns a cleanup function.
 export function subscribe(
   onEvent: (type: string, data: any) => void,

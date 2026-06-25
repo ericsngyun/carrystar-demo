@@ -15,6 +15,10 @@ out/
 *.sqlite
 *.db
 
+# Secrets (IMAP creds etc.) — never commit
+.env
+.env.*
+
 # OS / editor
 .DS_Store
 .idea/

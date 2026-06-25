@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  approveMutation, getState, nextEmail, rejectMutation, resetDemo, startReplay, subscribe,
+  approveMutation, getState, listenerStatus, nextEmail, rejectMutation, resetDemo,
+  startListener, startReplay, stopListener, subscribe,
 } from "./lib/api";
+import type { ListenerStatus } from "./lib/api";
 import { INTERNAL_COLUMNS, TRACKER_COLUMNS } from "./lib/types";
 import type { Mutation, TrackerRow } from "./lib/types";
 
@@ -41,6 +43,7 @@ export default function App() {
   const [resolved, setResolved] = useState<string | null>(null);
   const [flash, setFlash] = useState<Set<string>>(new Set());
   const [pulse, setPulse] = useState(false);
+  const [listener, setListener] = useState<ListenerStatus | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
 
   function addLog(msg: string, kind = "") {
@@ -51,6 +54,7 @@ export default function App() {
     getState().then((s) => {
       setRows(s.rows); setPending(s.pending); setRunning(s.replay_running); setHasNext(s.has_next);
     });
+    listenerStatus().then(setListener).catch(() => {});
     return subscribe(
       (type, data) => {
         setConnected(true);
@@ -128,6 +132,11 @@ export default function App() {
     setPending([]); setSummary(null); setResolved(null); setLog([]); setHasNext(false);
     const s = await getState(); setRows(s.rows);
   }
+  async function onListen() {
+    const s = listener?.running ? await stopListener() : await startListener();
+    setListener(s);
+    if (s.status) addLog(`listener: ${s.status}`, s.running ? "committed" : "log");
+  }
 
   const visiblePending = pending.filter((m) => m.status === "pending");
   const totalCtn = rows.reduce((a, r) => a + r.ctn_qty, 0);
@@ -145,6 +154,12 @@ export default function App() {
         <div className="status"><span className={`dot${connected ? " live" : ""}`} />{connected ? "stream live" : "connecting…"}</div>
         <button className="primary" disabled={running} onClick={onReplay}>▶ Replay thread</button>
         {hasNext && <button className="amber" disabled={running} onClick={onNext}>Next email ▸</button>}
+        <button
+          className={listener?.running ? "amber" : "ghost"}
+          disabled={!listener || (!listener.configured && !listener.running)}
+          title={listener?.configured ? `IMAP ${listener.host ?? ""}/${listener.folder}` : "set CARRYSTAR_IMAP_* to enable live inbox"}
+          onClick={onListen}
+        >{listener?.running ? "● Listening" : "📡 Listen"}</button>
         <button className="ghost" onClick={onReset}>Reset</button>
       </div>
 

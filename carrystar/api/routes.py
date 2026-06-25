@@ -98,6 +98,30 @@ async def replay_stop() -> dict:
     return {"stopped": True}
 
 
+# --- live email listener (autonomous ingest) ---------------------------------
+
+
+@router.get("/listener/status")
+async def listener_status() -> dict:
+    from carrystar.mail_listener import get_listener
+
+    return get_listener(app_state).status()
+
+
+@router.post("/listener/start")
+async def listener_start() -> dict:
+    from carrystar.mail_listener import get_listener
+
+    return await get_listener(app_state).start()
+
+
+@router.post("/listener/stop")
+async def listener_stop() -> dict:
+    from carrystar.mail_listener import get_listener
+
+    return await get_listener(app_state).stop()
+
+
 @router.post("/mutations/{mutation_id}/approve")
 async def approve(mutation_id: str, req: ApproveRequest | None = None) -> dict:
     try:

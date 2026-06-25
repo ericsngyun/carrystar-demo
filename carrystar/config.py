@@ -38,5 +38,15 @@ class Settings:
     # data-class gate. Never ship this set.
     llm_api_base: str = os.environ.get("CARRYSTAR_LLM_API_BASE", "")
 
+    # Live email listener (autonomous ingest). Credentials come from env only —
+    # never hardcoded/committed. Empty host => listener stays idle.
+    imap_host: str = os.environ.get("CARRYSTAR_IMAP_HOST", "")
+    imap_port: int = int(os.environ.get("CARRYSTAR_IMAP_PORT", "993"))
+    imap_user: str = os.environ.get("CARRYSTAR_IMAP_USER", "")
+    imap_password: str = os.environ.get("CARRYSTAR_IMAP_PASSWORD", "")
+    imap_folder: str = os.environ.get("CARRYSTAR_IMAP_FOLDER", "INBOX")
+    imap_sender_filter: str = os.environ.get("CARRYSTAR_IMAP_SENDER", "")  # optional FROM filter
+    listener_poll_seconds: float = float(os.environ.get("CARRYSTAR_LISTENER_POLL", "10"))
+
 
 settings = Settings()
