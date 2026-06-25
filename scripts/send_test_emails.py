@@ -27,7 +27,9 @@ from pathlib import Path
 
 import carrystar.config  # noqa: F401 — importing loads .env into os.environ
 
-ROSS = Path(__file__).resolve().parents[1] / "data" / "emails" / "ross-cs02411883"
+ROOT = Path(__file__).resolve().parents[1]
+ROSS = ROOT / "data" / "emails" / "ross-cs02411883"   # real bodies (text only)
+SYN = ROOT / "data" / "synthetic"                      # synthetic attachments (transit Gmail)
 _XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 _DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
@@ -46,16 +48,17 @@ def _build(sender: str, to: str, subject: str, body: str, attachments: list[Path
 
 
 def order_email(sender: str, to: str) -> EmailMessage:
+    # Real body text; SYNTHETIC attachments; pick-slip PDF dropped (the ~25s
+    # parse stall). Catch fires on order export + BOL agreeing 662 vs 559.
     return _build(sender, to, "Load CS02411883 - pickup 06/17, adding PO 11667250",
                   (ROSS / "email1_add_instruction.txt").read_text(),
-                  [ROSS / "Book6.xlsx", ROSS / "BOL_CS02411883_original.docx",
-                   ROSS / "Pick Slips - Export - 2026-06-15T111006.232.pdf"])
+                  [SYN / "order_export.xlsx", SYN / "BOL_original.docx"])
 
 
 def revision_email(sender: str, to: str) -> EmailMessage:
     return _build(sender, to, "RE: Load CS02411883 - revised BOL (PO 11667250 pulled)",
                   (ROSS / "email2_revision.txt").read_text(),
-                  [ROSS / "BOL_CS02411883_revised.docx"])
+                  [SYN / "BOL_revised.docx"])
 
 
 def main() -> int:

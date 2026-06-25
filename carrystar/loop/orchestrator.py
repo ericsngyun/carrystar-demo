@@ -59,7 +59,16 @@ def _docs_for_beat(beat) -> list[ParsedDoc]:
     from pathlib import Path
 
     parsers = registry.get_parsers()
-    return [parsers.parse_path(Path(p)) for p in beat.attachment_paths]
+    docs = [parsers.parse_path(Path(p)) for p in beat.attachment_paths]
+    # The revision email's written instruction is itself a source for the
+    # retraction ("Lina's follow-up email"), alongside the revised BOL.
+    if beat.kind == "revision" and beat.email_body:
+        docs.append(ParsedDoc(
+            doc_id=f"{beat.beat_id}-email", doc_name=f"email — {beat.sender}",
+            doc_type=DocType.EMAIL_BODY, shipment_id=beat.shipment_id,
+            rows=[], confidence=0.7, notes=beat.email_body,
+        ))
+    return docs
 
 
 def _rescind_provenance(docs: list[ParsedDoc], po: str) -> tuple[list[SourceRef], int | None]:
@@ -104,6 +113,12 @@ def build_graph(app_state):
         merged = merge_parsed_docs(docs)
         await bus.publish(Event(EventType.EXTRACT, {
             "message": f"merged into {len(merged.rows)} order line(s) for {merged.shipment_id}"}))
+        if beat.kind == "order":
+            from carrystar.demo_readout import order_accuracy_line
+
+            line = order_accuracy_line(merged)
+            if line:
+                await bus.publish(Event(EventType.LOG, {"message": line}))
         await asyncio.sleep(step)
         return {"docs": docs, "merged_doc": merged}
 
