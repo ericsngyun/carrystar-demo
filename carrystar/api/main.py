@@ -13,6 +13,13 @@ FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
 def create_app() -> FastAPI:
+    # Register the real Codex seams (WS-1 parsers / WS-2 store / WS-5 replay).
+    # Behind a flag so a rehearsal can fall back to the dev stub if needed.
+    from carrystar.config import settings
+
+    if settings.real_seams:
+        import carrystar.bootstrap  # noqa: F401 — import registers the seams
+
     app = FastAPI(title="Carrystar Real-Time Agent Demo", version="0.1.0")
 
     # Vite dev server runs on :5173; allow it during development.

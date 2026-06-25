@@ -28,6 +28,10 @@ class Settings:
     # Replay pacing (seconds between streamed beats) for the "real-time" feel.
     replay_step_seconds: float = float(os.environ.get("CARRYSTAR_REPLAY_STEP", "1.2"))
     dev_seam: bool = os.environ.get("CARRYSTAR_DEV_SEAM", "1") == "1"
+    # When true (default), register the real Codex seams (parsers/store/replay)
+    # at startup. Set CARRYSTAR_REAL_SEAMS=0 to fall back to the dev stub — a
+    # safety valve if real parsing ever misbehaves mid-rehearsal.
+    real_seams: bool = os.environ.get("CARRYSTAR_REAL_SEAMS", "1") == "1"
 
 
 settings = Settings()
