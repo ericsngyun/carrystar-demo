@@ -215,6 +215,26 @@ async def deliver_next(app_state, step_seconds: float | None = None) -> bool:
     return True
 
 
+async def ingest(app_state, beat, step_seconds: float | None = None) -> None:
+    """Push a single inbound email (Beat) through the graph in real time.
+
+    This is the entrypoint a live source (the email listener) calls when a
+    message arrives — independent of the scripted replay cursor. The human gate
+    is unchanged: this runs triage -> extract -> reconcile -> propose and STOPS;
+    nothing commits without an approval.
+    """
+    step = step_seconds if step_seconds is not None else settings.replay_step_seconds
+    app_state.beat_in_flight = True
+    graph = build_graph(app_state)
+    try:
+        await graph.ainvoke({"beat": beat, "step": step})
+    except Exception as e:  # noqa: BLE001 — surface, don't crash the listener
+        await app_state.bus.publish(Event(EventType.ERROR, {"message": f"{type(e).__name__}: {e}"}))
+    finally:
+        app_state.beat_in_flight = False
+        await app_state.bus.publish(Event(EventType.DONE, {"beat": beat.beat_id, "has_next": False, "source": "listener"}))
+
+
 async def run_all_beats(app_state, step_seconds: float = 0.0) -> None:
     """Headless convenience: begin a replay and deliver every beat in order."""
     await app_state.begin_replay()
