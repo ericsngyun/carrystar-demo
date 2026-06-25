@@ -32,6 +32,11 @@ class Settings:
     # at startup. Set CARRYSTAR_REAL_SEAMS=0 to fall back to the dev stub — a
     # safety valve if real parsing ever misbehaves mid-rehearsal.
     real_seams: bool = os.environ.get("CARRYSTAR_REAL_SEAMS", "1") == "1"
+    # ENGINEERING-ONLY override: point LiteLLM at a local endpoint (e.g. EVO-X2
+    # ollama over Tailscale) to prototype agent behaviors on local models.
+    # EMPTY in the product — Carrystar's runtime stays on frontier APIs per the
+    # data-class gate. Never ship this set.
+    llm_api_base: str = os.environ.get("CARRYSTAR_LLM_API_BASE", "")
 
 
 settings = Settings()

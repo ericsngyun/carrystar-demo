@@ -2,7 +2,11 @@
 
 Frontier APIs from the orchestration spine: Haiku-class for triage, Claude-class
 for messy/low-confidence parse repair. Carrystar is the non-regulated track, so
-no local OSS / EVO-X2 here.
+the PRODUCT runtime stays on frontier APIs — no local OSS / EVO-X2 in the product.
+
+Engineering-only escape hatch: setting CARRYSTAR_LLM_API_BASE points LiteLLM at a
+local endpoint (e.g. EVO-X2 ollama over Tailscale) so agent behaviors can be
+prototyped/eval'd on local models during development. It is empty in the product.
 
 Every call is defensive: if CARRYSTAR_USE_LLM is off, or LiteLLM/network fails,
 we fall back to deterministic heuristics so rehearsals never break offline. The
@@ -50,16 +54,23 @@ def _triage_llm(subject: str, account: str, has_attachments: bool) -> TriageDeci
         import litellm
 
         prompt = (
-            "You are triaging inbound warehouse email. Decide if it is an order/shipment "
-            "notice that should update the shipment tracker. Respond with strict JSON: "
-            '{"is_order": bool, "reason": "<short>"}.\n\n'
+            "You are triaging inbound warehouse email. Decide if it should be reconciled "
+            "into the shipment tracker — this includes new orders, shipment/BOL notices, "
+            "AND follow-up revisions that change or cancel a prior order. Respond with "
+            'strict JSON: {"is_order": bool, "reason": "<short>"}.\n\n'
             f"account: {account}\nsubject: {subject}\nhas_attachments: {has_attachments}"
         )
+        kwargs: dict = {"temperature": 0, "max_tokens": 200}
+        if settings.llm_api_base:
+            # Local engineering endpoint (e.g. EVO-X2 ollama). think=False stops
+            # reasoning models from spending the budget on thinking tokens, so
+            # they emit the JSON directly.
+            kwargs["api_base"] = settings.llm_api_base
+            kwargs["think"] = False
         resp = litellm.completion(
             model=settings.triage_model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            max_tokens=120,
+            **kwargs,
         )
         content = resp["choices"][0]["message"]["content"]
         data = json.loads(_extract_json(content))
