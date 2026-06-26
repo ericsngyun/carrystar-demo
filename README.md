@@ -6,9 +6,11 @@ mutations **commit** to the store and visibly update the on-screen tracker and a
 mirror `.xlsx`.
 
 **Hero beat (real data, two acts):** the Ross `CS02411883` thread.
-- **Act 1 — the catch.** The order export, the original BOL, and the pick slip
-  all show **662 ctn across 5 POs**; the tracker holds **559 / 4**. The agent
-  flags PO `11667250` (103 ctn, heather grey) as missing, with full provenance.
+- **Act 1 — the catch.** The order export and the original BOL both show
+  **662 ctn across 5 POs**; the tracker holds **559 / 4**. The agent flags PO
+  `11667250` (103 ctn, heather grey) as missing, with full provenance. (The
+  pick slip is corroboration-only and dropped from the live packet — its OCR
+  blocked the loop; the real PDF stays on disk for the parser.)
 - **Act 2 — the retract.** Lina's follow-up email arrives: *"we will NOT be
   shipping PO 11667250 on this load — it ships in July; disregard the pick slip"*
   plus a **revised BOL** (559/4). The agent reads it and **withdraws its own

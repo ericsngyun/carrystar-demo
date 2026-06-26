@@ -3,8 +3,9 @@ ParsedDoc per shipment, accumulating provenance.
 
 This is the 'extract' step's join: the order export, the BOL, and the email
 instruction each contribute a view of the same PO lines. Merging by customer_po
-and accumulating `_sources` is what makes the Ross catch *triple-sourced* — the
-engine then sees PO 11667250 corroborated by three documents.
+and accumulating `_sources` is what makes the Ross catch *multi-sourced* — the
+engine sees PO 11667250 corroborated by the order export and the original BOL
+(the pick slip was dropped from the packet, b72f0ee — corroboration-only).
 """
 
 from __future__ import annotations
