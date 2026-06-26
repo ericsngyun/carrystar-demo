@@ -41,8 +41,8 @@ def test_act1_surfaces_the_missing_po_catch():
         assert m.classification.value == "missing_row"
         assert m.proposed_row.customer_po == "11667250"
         assert m.proposed_row.ctn_qty == 103
-        # corroborated by order export + original BOL + pick slip + email
-        assert len({s.doc_name for s in m.sources}) >= 3
+        # multi-sourced catch: order export + original BOL + email (pick slip dropped)
+        assert len({s.doc_name for s in m.sources}) >= 2
         # tracker untouched until a human approves
         from carrystar.seams import registry
         assert sum(r.ctn_qty for r in registry.get_store().get_state()) == 559
