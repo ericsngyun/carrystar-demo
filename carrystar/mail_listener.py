@@ -79,7 +79,9 @@ class MailListener:
         """Blocking IMAP poll. Returns [(uid, raw_rfc822)] for messages we
         haven't seen. Runs inside a thread."""
         out: list[tuple[bytes, bytes]] = []
-        M = imaplib.IMAP4_SSL(settings.imap_host, settings.imap_port)
+        # timeout so a network blip can't hang the poll loop indefinitely
+        # (status would still read "listening" while silently stalled).
+        M = imaplib.IMAP4_SSL(settings.imap_host, settings.imap_port, timeout=20)
         try:
             M.login(settings.imap_user, settings.imap_password)
             M.select(settings.imap_folder, readonly=True)
