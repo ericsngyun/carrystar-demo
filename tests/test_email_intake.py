@@ -40,8 +40,8 @@ def _order_email() -> bytes:
     return _msg(
         "Load CS02411883 - pickup 06/17, adding PO 11667250",
         (ROSS / "email1_add_instruction.txt").read_text(),
-        [ROSS / "Book6.xlsx", ROSS / "BOL_CS02411883_original.docx",
-         ROSS / "Pick Slips - Export - 2026-06-15T111006.232.pdf"],
+        # Matches the synthetic Gmail packet: pick slip dropped (b72f0ee).
+        [ROSS / "Book6.xlsx", ROSS / "BOL_CS02411883_original.docx"],
     )
 
 
@@ -64,7 +64,7 @@ def test_order_email_becomes_a_beat_with_real_attachments(tmp_path):
     beat = email_to_beat(_order_email(), tmp_path, "ross-order", account="ROSS")
     assert beat.kind == "order"
     assert beat.shipment_id == "CS02411883"
-    assert {Path(p).suffix for p in beat.attachment_paths} == {".xlsx", ".docx", ".pdf"}
+    assert {Path(p).suffix for p in beat.attachment_paths} == {".xlsx", ".docx"}
     assert beat.parsed_docs == []   # parsed live by the WS-1 seam during ingest
 
 
@@ -88,7 +88,7 @@ def test_autonomous_ingest_two_emails_full_two_act(tmp_path):
         pend = app.pending_list()
         assert len(pend) == 1 and pend[0].classification.value == "missing_row"
         assert pend[0].proposed_row.customer_po == "11667250"
-        assert len({s.doc_name for s in pend[0].sources}) >= 3   # export + BOL + pick slip
+        assert len({s.doc_name for s in pend[0].sources}) >= 2   # export + BOL (pick slip dropped)
         # human gate intact: nothing committed yet
         assert sum(r.ctn_qty for r in registry.get_store().get_state()) == 559
 

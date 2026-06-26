@@ -4,8 +4,9 @@ PURPOSE: run the API + agent loop + UI on the *verified-real* Ross thread
 (CS02411883) BEFORE Codex's parsers/store/replay land. Models the real two-act
 timeline:
 
-  Beat 1 (order):    order export + ORIGINAL BOL (662/5) + pick slip + Lina's
-                     email asking to ADD PO 11667250 (103 ctn heather grey).
+  Beat 1 (order):    order export + ORIGINAL BOL (662/5) + Lina's email asking
+                     to ADD PO 11667250 (103 ctn heather grey). (Pick slip
+                     dropped — corroboration-only, see b72f0ee.)
   Beat 2 (revision): Lina's follow-up — "will NOT ship PO 11667250, ships in
                      July, disregard the pick slip" — + the REVISED BOL (559/4).
 
@@ -249,8 +250,8 @@ class _DevReplay:
                 sender="Lina Vincelli · Mark Edwards Apparel",
                 subject="Load CS02411883 — pickup 06/17, adding PO 11667250",
                 email_body=EMAIL1,
-                attachment_names=["Book6.xlsx", "BOL CS02411883.docx", "Pick Slips - Export.pdf"],
-                parsed_docs=[_order_export(), _bol(revised=False), _pickslip(), _email(1)],
+                attachment_names=["Book6.xlsx", "BOL CS02411883.docx"],
+                parsed_docs=[_order_export(), _bol(revised=False), _email(1)],
             ),
             Beat(
                 beat_id="ross-2-revision", kind="revision", shipment_id=ROSS_BOL, account="ROSS",

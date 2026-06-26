@@ -33,11 +33,12 @@ def real_seams(tmp_path: Path):
 
 
 def _order_docs():
+    # Pick slip dropped from the demo packet (b72f0ee) — corroboration-only and
+    # OCR-slow. The catch stays multi-sourced via the order export + original BOL.
     p = parsers()
     return [
         p.parse_path(ROSS_DIR / "Book6.xlsx"),
         p.parse_path(ROSS_DIR / "BOL_CS02411883_original.docx"),
-        p.parse_path(ROSS_DIR / "Pick Slips - Export - 2026-06-15T111006.232.pdf"),
     ]
 
 
@@ -52,7 +53,7 @@ def test_real_parser_doc_totals():
     assert len(revised.rows) == 4 and sum(row["ctn_qty"] for row in revised.rows) == 559
 
 
-def test_real_act1_reconcile_flags_one_triple_sourced_missing_row():
+def test_real_act1_reconcile_flags_the_missing_row_catch():
     merged = merge_parsed_docs(_order_docs())
     result = reconcile(initial_tracker_rows(), merged)
 
@@ -65,8 +66,7 @@ def test_real_act1_reconcile_flags_one_triple_sourced_missing_row():
     source_names = {source.doc_name for source in mutation.sources}
     assert "Book6.xlsx" in source_names
     assert "BOL_CS02411883_original.docx" in source_names
-    assert "Pick Slips - Export - 2026-06-15T111006.232.pdf" in source_names
-    assert len(source_names) >= 3
+    assert len(source_names) >= 2   # multi-sourced catch (export + BOL); pick slip dropped
 
 
 def test_real_act2_revised_bol_reconcile_is_in_sync():
@@ -89,7 +89,6 @@ def test_real_replay_beats_have_paths_and_derived_rescind(real_seams):
     assert [Path(path).name for path in beats[0].attachment_paths] == [
         "Book6.xlsx",
         "BOL_CS02411883_original.docx",
-        "Pick Slips - Export - 2026-06-15T111006.232.pdf",
     ]
     assert [Path(path).name for path in beats[1].attachment_paths] == ["BOL_CS02411883_revised.docx"]
     assert beats[1].rescinds == ["11667250"]

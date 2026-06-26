@@ -108,10 +108,13 @@ class RossReplaySource:
         return self.cache_path
 
     def _order_paths(self) -> list[Path]:
+        # Pick slip intentionally dropped from the demo packet (b72f0ee): it is
+        # corroboration-only, and parsing it live triggers multi-second OCR that
+        # blocks the agent loop. The catch stays multi-sourced via the order
+        # export + original BOL. The real PDF remains on disk for the parser.
         return [
             self.data_dir / "Book6.xlsx",
             self.data_dir / "BOL_CS02411883_original.docx",
-            self.data_dir / "Pick Slips - Export - 2026-06-15T111006.232.pdf",
         ]
 
     def _revision_paths(self) -> list[Path]:
